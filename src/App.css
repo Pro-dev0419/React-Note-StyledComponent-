@@ -1,0 +1,92 @@
+
+
+.header-setting,
+.header-signup {
+    display: flex;
+    height: 100%;
+}
+
+.header-setting .rs-dropdown-toggle {
+    height: 100%;
+    font-size: 17px;
+    color: #1976d2;
+    background-color: transparent;
+}
+
+.header-signup .rs-dropdown-toggle {
+    height: 100%;
+    font-size: 14px;
+    color: #1976d2;
+    background-color: transparent;
+}
+
+.header-setting .rs-dropdown-toggle-caret,
+.header-signup .rs-dropdown-toggle-caret {
+    top: 28px;
+}
+
+.header-setting .rs-dropdown-menu,
+.header-signup .rs-dropdown-menu {
+    width: 170px;
+}
+
+.header-setting button,
+.header-signup button {
+    border: none;
+    border-right: 1px solid;
+    border-radius: 0;
+    width: 170px;
+}
+
+.header-setting button {
+    border-left: 1px solid;
+}
+
+.add-note-btn {
+    margin-right: 25px !important;
+}
+
+.add-note-input {
+    flex: 1;
+}
+
+
+
+.note-item-box {
+    padding: 10px;
+    border: 1px solid;
+    border-radius: 5px;
+    display: flex;
+    text-align: center;
+    justify-content: center;
+    margin: 0 10px;
+}
+
+.note-item-box .star-icon,
+.note-item-box .note-delete {
+    align-self: end;
+}
+
+.note-item-box .note-content {
+    flex: 1;
+    padding: 20px 0;
+    font-family: serif;
+}
+
+.slick-arrow::before {
+    color: black !important;
+}
+
+.MuiContainer-root.MuiContainer-maxWidthXs {
+    background-color: white;
+    margin-top: 2rem;
+    padding: 2rem;
+}
+
+.MuiContainer-root.MuiContainer-maxWidthXs p {
+    padding-top: 1rem;
+    text-decoration: underline;
+    text-align: center;
+    color: #1976d2;
+    cursor: pointer;
+}
