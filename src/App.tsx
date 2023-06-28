@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import logo from "./logo.png";
 import "./App.css";
 import "slick-carousel/slick/slick.css";
@@ -11,6 +11,7 @@ import OutlinedInput from "@mui/material/OutlinedInput";
 import { Modal, Typography, TextField, Container } from '@material-ui/core';
 import { BlockPicker } from 'react-color';
 import moment from 'moment';
+import { ToastProvider, useToasts } from 'react-toast-notifications'
 
 import NoteItem from "./components/NoteItem";
 import {
@@ -61,11 +62,24 @@ const initialNote = [
 ];
 
 function App() {
+   
+    return (
+        <ToastProvider>
+            <MyComponent />
+        </ToastProvider>
+    );
+}
 
+function MyComponent() {
+    const elementRef = useRef(null);
+
+    const { addToast } = useToasts();
     const [color, setColor] = useState('#e0ecfc');
     const [displayColorPicker, setDisplayColorPicker] = useState(false);
     const [newNote, setNewNote] = useState('');
     const [noteList, setNoteList] = useState(initialNote);
+    const [audioDevices, setAudioDevices] = useState([]);
+    const [activeAudio, setActiveAudio] = useState(null);
 
     const [openModal, setOpenModal] = useState(false);
     const [signinStatus, setSigninStatus] = useState("logout");
@@ -79,24 +93,27 @@ function App() {
         infinite: false,
         speed: 500,
         slidesToShow: 4,
-        slidesToScroll: 1,
+        slidesToScroll: 2,
         responsive: [
             {
                 breakpoint: 1024,
                 settings: {
-                    slidesToShow: 3
+                    slidesToShow: 3,
+                    slidesToScroll: 1
                 }
             },
             {
                 breakpoint: 768,
                 settings: {
-                    slidesToShow: 2
+                    slidesToShow: 2,
+                    slidesToScroll: 1
                 }
             },
             {
                 breakpoint: 500,
                 settings: {
-                    slidesToShow: 1
+                    slidesToShow: 1,
+                    slidesToScroll: 1
                 }
             }
         ]
@@ -115,6 +132,16 @@ function App() {
     } as React.CSSProperties;
 
     useEffect(() => {
+        navigator.mediaDevices.enumerateDevices()
+            .then(devices => {
+                const audioInputDevices: any = devices.filter(device => device.kind === 'audioinput');
+                setAudioDevices(audioInputDevices);
+            })
+            .catch(error => {
+                console.error(error);
+            });
+
+
         const currentUser: User = JSON.parse(localStorage.getItem('currentUser') || '{}');
         if (localStorage.getItem('noteDataList')) {
             const localNote = JSON.parse(localStorage.getItem('noteDataList') || '[]');
@@ -163,13 +190,13 @@ function App() {
         const users: User[] = JSON.parse(localStorage.getItem('users') || '[]');
         const user = users.find(user => user.email === signInData.email && user.password === signInData.password);
         if (user) {
-            alert('Login successfully');
+            addToast('Login successfully', { appearance: 'success', autoDismiss: true });
             localStorage.setItem('currentUser', JSON.stringify(user));
             setSigninStatus("signin");
             setCurrentUserEmail(signInData.email);
             // redirect to dashboard or home page
         } else {
-            alert('Invalid email or password');
+            addToast('Invalid email or password', { appearance: 'error', autoDismiss: false });
         }
 
         setOpenModal(false);
@@ -181,7 +208,7 @@ function App() {
         const users: User[] = JSON.parse(localStorage.getItem('users') || '[]');
         const user = users.find(user => user.email === signUpData.email);
         if (user) {
-            alert('Email already exists');
+            addToast('Email already exists', { appearance: 'error', autoDismiss: false });
         } else {
             let email = signUpData.email;
             let password = signUpData.password;
@@ -191,7 +218,7 @@ function App() {
             localStorage.setItem('users', JSON.stringify([...users, newUser]));
             setSigninStatus("signin");
             setCurrentUserEmail(signUpData.email);
-            alert('SignUp successfully');
+            addToast('SignUp successfully', { appearance: 'success', autoDismiss: true });
             // redirect to dashboard or home page
         }
         setOpenModal(false);
@@ -203,19 +230,24 @@ function App() {
     }
 
     const addNoteHandle = () => {
-        if (signinStatus === "signin" && newNote !== '' && !noteList.some(item => item.title === newNote)) {
-            const newNoteObj: any = {
-                title: newNote,
-                date: moment(new Date()).format('DD MMM YYYY'),
-                favourite: false
-            };
-            setNoteList((prevNote: any) => {
-                localStorage.setItem('noteDataList', JSON.stringify([...prevNote, newNoteObj]));
-                return [...prevNote, newNoteObj]
-            });
-            setNewNote('');
+        if (signinStatus === "signin") {
+            if (newNote !== '' && !noteList.some(item => item.title === newNote)) {
+                const newNoteObj: any = {
+                    title: newNote,
+                    date: moment(new Date()).format('DD MMM YYYY'),
+                    favourite: false
+                };
+                setNoteList((prevNote: any) => {
+                    localStorage.setItem('noteDataList', JSON.stringify([...prevNote, newNoteObj]));
+                    return [...prevNote, newNoteObj]
+                });
+                setNewNote('');
+            } else {
+                addToast('Please insert correct note.', { appearance: 'error', autoDismiss: false });
+                
+            }
         } else {
-            alert('Please check login status and correct value')
+            addToast('Please check login status', { appearance: 'error', autoDismiss: false });
         }
     }
 
@@ -250,7 +282,7 @@ function App() {
 
 
     return (
-        <div className="main-app">
+        <div className="main-app" ref={elementRef}>
             <CustomHeader bgColor={color}>
                 <HeaderLogoDiv>
                     <AppLogo src={logo} alt="logo" />
@@ -258,11 +290,20 @@ function App() {
                 <HeaderContent />
                 <HeaderBtnGroup>
                     <div className="header-setting">
-                        <Dropdown title="SETTING">
+                        <Dropdown title="SETTING" activeKey={activeAudio} onSelect={(key) => {
+                            if (key) {
+                                setActiveAudio(key)
+                            }
+                        }}>
                             <Dropdown.Menu title="Audio Input Device">
-                                <Dropdown.Item>Input #1</Dropdown.Item>
-                                <Dropdown.Item>Input #2</Dropdown.Item>
-                                <Dropdown.Item>Input #3</Dropdown.Item>
+                                {
+                                    audioDevices.length
+                                        ? audioDevices.map((device: any) => {
+                                            return <Dropdown.Item eventKey={device?.label}>{device?.label}</Dropdown.Item>
+                                        })
+                                        : <><Dropdown.Item eventKey="Microphones">Microphones</Dropdown.Item>
+                                            <Dropdown.Item eventKey="Radio Receivers">Radio Receivers</Dropdown.Item></>
+                                }
                             </Dropdown.Menu>
                             <Dropdown.Item>
                                 <span style={{ display: 'flex' }} onClick={handleClick}>Color theme</span>

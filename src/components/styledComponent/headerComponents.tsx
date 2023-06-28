@@ -35,5 +35,4 @@ export const HeaderContent = styled.div`
 
 export const HeaderBtnGroup = styled.div`
     display: flex;
-    align-items: center;
 `;
