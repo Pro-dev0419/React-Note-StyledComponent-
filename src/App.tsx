@@ -78,7 +78,6 @@ function MyComponent() {
     const [displayColorPicker, setDisplayColorPicker] = useState(false);
     const [newNote, setNewNote] = useState('');
     const [noteList, setNoteList] = useState(initialNote);
-    const [audioDevices, setAudioDevices] = useState([]);
     const [activeAudio, setActiveAudio] = useState(null);
 
     const [openModal, setOpenModal] = useState(false);
@@ -132,16 +131,6 @@ function MyComponent() {
     } as React.CSSProperties;
 
     useEffect(() => {
-        navigator.mediaDevices.enumerateDevices()
-            .then(devices => {
-                const audioInputDevices: any = devices.filter(device => device.kind === 'audioinput');
-                setAudioDevices(audioInputDevices);
-            })
-            .catch(error => {
-                console.error(error);
-            });
-
-
         const currentUser: User = JSON.parse(localStorage.getItem('currentUser') || '{}');
         if (localStorage.getItem('noteDataList')) {
             const localNote = JSON.parse(localStorage.getItem('noteDataList') || '[]');
@@ -212,14 +201,17 @@ function MyComponent() {
         } else {
             let email = signUpData.email;
             let password = signUpData.password;
-
-            const newUser: User = { email, password };
-            localStorage.setItem('currentUser', JSON.stringify(newUser));
-            localStorage.setItem('users', JSON.stringify([...users, newUser]));
-            setSigninStatus("signin");
-            setCurrentUserEmail(signUpData.email);
-            addToast('SignUp successfully', { appearance: 'success', autoDismiss: true });
-            // redirect to dashboard or home page
+            if(password.length > 8) {
+                const newUser: User = { email, password };
+                localStorage.setItem('currentUser', JSON.stringify(newUser));
+                localStorage.setItem('users', JSON.stringify([...users, newUser]));
+                setSigninStatus("signin");
+                setCurrentUserEmail(signUpData.email);
+                addToast('SignUp successfully', { appearance: 'success', autoDismiss: true });
+                // redirect to dashboard or home page
+            } else {
+                addToast('Password must be at least 8 characters.', { appearance: 'error', autoDismiss: true });
+            }
         }
         setOpenModal(false);
     };
@@ -261,6 +253,8 @@ function MyComponent() {
                     return newList;
                 });
             }
+        } else {
+            addToast('Please login', { appearance: 'info', autoDismiss: true });
         }
     }
 
@@ -277,6 +271,8 @@ function MyComponent() {
                 localStorage.setItem('noteDataList', JSON.stringify(newList));
                 return newList;
             });
+        } else {
+            addToast('Please login', { appearance: 'info', autoDismiss: true });
         }
     }
 
@@ -296,14 +292,8 @@ function MyComponent() {
                             }
                         }}>
                             <Dropdown.Menu title="Audio Input Device">
-                                {
-                                    audioDevices.length
-                                        ? audioDevices.map((device: any) => {
-                                            return <Dropdown.Item eventKey={device?.label}>{device?.label}</Dropdown.Item>
-                                        })
-                                        : <><Dropdown.Item eventKey="Microphones">Microphones</Dropdown.Item>
-                                            <Dropdown.Item eventKey="Radio Receivers">Radio Receivers</Dropdown.Item></>
-                                }
+                                <Dropdown.Item eventKey="Microphones">Microphones</Dropdown.Item>
+                                <Dropdown.Item eventKey="Radio Receivers">Radio Receivers</Dropdown.Item>
                             </Dropdown.Menu>
                             <Dropdown.Item>
                                 <span style={{ display: 'flex' }} onClick={handleClick}>Color theme</span>
