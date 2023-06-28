@@ -93,6 +93,7 @@ function MyComponent() {
         speed: 500,
         slidesToShow: 4,
         slidesToScroll: 2,
+        swipeToSlide: true,
         responsive: [
             {
                 breakpoint: 1024,
